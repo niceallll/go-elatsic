@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+    <title>elastic</title>
+    <script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.14/vue.min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/axios/0.21.1/axios.min.js"></script>
+
+    <style type="text/css">
+        body,table{
+            font-size:12px;
+        }
+
+        table{
+            table-layout:fixed;
+            empty-cells:show;
+            border-collapse: collapse;
+            margin:0 auto;
+        }
+        td{
+            height:30px;
+        }
+        h1,h2,h3{
+            font-size:12px;
+            margin:0;
+            padding:0;
+        }
+        .table{
+            border:1px solid #cad9ea;
+            color:#666;
+        }
+        .table th {
+            background-repeat:repeat-x;
+            height:30px;
+        }
+        .table td,.table th{
+            border:1px solid #cad9ea;
+            padding:0 1em 0;
+            word-break: break-all;
+        }
+        .table tr.alter{
+            background-color:#f5fafe;
+        }
+
+        .modal{
+            position: fixed;
+            top:0;
+            right:0;
+            left:0;
+            bottom:0;
+
+
+        }
+        .modal-dialog{
+            width: 100%;
+            height: 100%;
+
+            background-color: rgba(0,0,0,0.5);
+        }
+        .modal-content{
+            margin:auto;
+            border:1px solid #ddd;
+            top:0;
+            right:0;
+            left:0;
+            bottom:0;
+            position: absolute;
+            background-color:#fff;
+            background-color:#fff;
+            width:500px;
+            height:700px;
+            padding:20px;
+        }
+        .inlinebox{
+            /*display: inline-block;*/
+            margin-right: 20px;
+            margin-bottom: 20px;
+
+
+        }
+        .inlinebox div{
+            display: inline-block;
+            width:100px;
+        }
+        .inlinebox select, .inlinebox input, .inlinebox textarea{
+        width:300px;
+        }
+        .close{
+            position: absolute;
+            top:20px;
+            right:20px;
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+<!--    <input type="text" v-model="es_name" placeholder="es_name">-->
+    <br/>
+    <button @click="createItem">添加查询条件</button>
+    <br/>
+    <button @click="V6">查询es6版本当前记录</button>
+    <br/>
+    <button @click="V7">查询es7版本当前记录</button>
+    <a href="https://xxxxx">规则明细</a>
+    <div style="margin-top: 20px;">${message}</div>
+    <div style="margin-top: 20px;">
+        <table width="90%" class="table">
+            <thead>
+            <tr>
+                <th >ID</th>
+                <th >ESNAME</th>
+                <th >ESINDEX</th>
+                <th >ES查询条件</th>
+                <th >ES过滤条件</th>
+                <th >触发条数</th>
+                <th >钉钉机器人地址</th>
+                <th >联系人</th>
+                <th >阿里云事件中心</th>
+                <th >是否开启</th>
+                <th >操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr class="alter" v-for="items in array">
+                <td >${items.id}</td>
+                <td >${items.es_name}</td>
+                <td >${items.es_index}</td>
+                <td >${items.es_most_msg}</td>
+                <td >${items.es_most_not_msg}</td>
+                <td >${items.size}</td>
+                <td >${items.ding_talk}</td>
+                <td >${items.tlp}</td>
+                <td >${items.aliname}</td>
+                <td >${items.warn_up}</td>
+                <td>
+                    <span style="cursor: pointer" @click="remove2(items.id, items.es_name)">删除</span>
+                    <span style="cursor: pointer" @click="updateItem(items)">更新</span>
+                    <span style="cursor: pointer" @click="copyItem(items)">复制</span>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div v-if="showmodal" class="modal fade" id="updateModal" tabindex="-1" role="dialog" aria-labelledby="updateModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document" >
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="updateModalLabel">${showmodal=='1'?'新增':showmodal=='2'?'更新':'复制'}</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"  @click="close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+
+                    <div class="inlinebox"><div>es-env</div>
+                        <select  v-model="es_name">
+                            <option value="lcz-prod">lcz-prod</option>
+                            <option value="ucode-prod">ucode-prod</option>
+                            <option value="wly-prod">wly-prod</option>
+                            <option value="sjf-prod">sjf-prod</option>
+                            <option value="jnc-prod">jnc-prod</option>
+                            <option value="lq-prod">lq-prod</option>
+                            <option value="jj-prod">jj-prod</option>
+                            <option value="jh-prod">jh-prod</option>
+                            <option value="xj-prod">xj-prod</option>
+                            <option value="dhx-prod">dhx-prod</option>
+                        </select>
+                    </div>
+
+                    <div class="inlinebox"><div>es-index</div><textarea type="text" v-model="es_index" placeholder="es_index"></textarea></div>
+                    <div class="inlinebox"><div>查询条件</div><textarea type="text" v-model="es_most_msg" placeholder="es_most_msg"></textarea></div>
+                    <div class="inlinebox"><div>过滤条件</div><textarea type="text" v-model="es_most_not_msg" placeholder="es_most_not_msg"></textarea></div>
+                    <div class="inlinebox"><div>联系人</div><textarea type="text" v-model="tlp" placeholder="tlp"></textarea></div>
+                    <div class="inlinebox"><div>钉钉机器人TOKEN</div><textarea type="text" v-model="ding_talk" placeholder="ding_talk"></textarea></div>
+                    <div class="inlinebox"><div>触发数量</div><textarea type="text" v-model="size" placeholder="size"></textarea></div>
+                    <div class="inlinebox"><div>阿里云事件中心</div><textarea type="text" v-model="aliname" placeholder="aliname"></textarea></div>
+                    <div class="inlinebox"><div>是否开启</div><textarea type="text" v-model="warn_up" placeholder="warn_up"></textarea></div>
+
+                </div>
+                <div class="modal-footer">
+                    <button @click="close">取消</button>
+                    <button @click="fetchData3">添加查询条件</button>
+<!--                    <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>-->
+<!--                    <button type="button" class="btn btn-primary" @click="updateItemConfirm">确认更新</button>-->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    new Vue({
+        delimiters: ['${','}'],
+        el: '#app',
+        data: {
+            message: '当前规则!',
+            array:[1],
+            version: '6',
+            showmodal:false,
+            updateItemData:'',
+        },
+        created() {
+            this.init();
+            console.log(123)
+        },
+        methods: {
+            init() {
+                this.V6()
+                // axios.get('http://127.0.0.1:8084/SqlV7QureyhHeadr/')
+                //     .then(response => {
+                //         console.log(response.data.data)
+                //          this.array = response.data.data;
+                //     })
+                //     .catch(error => {
+                //         console.error(error);
+                //     });
+            },
+
+            close(){
+                this.showmodal=false;
+            },
+
+            createItem() {
+                this.showmodal=1;
+                this.id='';
+                this.es_name='lqp9-test';
+                this.es_index='{"1":"nginx-prod*"}';
+                this.es_most_msg= '{"status":["200"]}';
+                this.es_most_not_msg='';
+                this.tlp='{"xx":"xxxx"}';
+                this.time='-5m';
+                this.ding_talk='{ "ERROR机器人": "xxxxxx" }';
+                this.size='1';
+                this.aliname='Nginx状态码x';
+                this.warn_up='是否开启阿里云事件中心0或者1';
+                this.del='1';
+            },
+
+            updateItem(items){
+              this.showmodal=2;
+                this.id=items.id;
+                this.es_name=items.es_name;
+                this.es_index=JSON.stringify(items.es_index);
+                this.es_most_msg=JSON.stringify(items.es_most_msg);
+                this.es_most_not_msg=JSON.stringify(items.es_most_not_msg);
+                this.tlp=JSON.stringify(items.tlp);
+                this.time=items.time;
+                this.ding_talk=JSON.stringify(items.ding_talk);
+                this.size=items.size;
+                this.aliname=items.aliname;
+                this.warn_up=items.warn_up;
+            },
+
+            copyItem(items){
+                this.showmodal=3;
+                this.id=items.id;
+                this.es_name=items.es_name;
+                this.es_index=JSON.stringify(items.es_index);
+                this.es_most_msg=JSON.stringify(items.es_most_msg);
+                this.es_most_not_msg=JSON.stringify(items.es_most_not_msg);
+                this.tlp=JSON.stringify(items.tlp);
+                this.time=items.time;
+                this.ding_talk=JSON.stringify(items.ding_talk);
+                this.size=items.size;
+                this.aliname=items.aliname;
+                this.warn_up=items.warn_up;
+                this.del = items.del;
+            },
+
+            fetchData3() {
+                let data = {
+                    id:this.id||'',
+                    es_name: this.es_name,
+                    es_index: JSON.parse(this.es_index||'{}'),
+                    es_most_msg:  JSON.parse(this.es_most_msg||'{}'),
+                    es_most_not_msg:  JSON.parse(this.es_most_not_msg||'{}'),
+                    tlp:   JSON.parse(this.tlp||'{}'),
+                    ding_talk:  JSON.parse(this.ding_talk||'{}'),
+                    size: parseInt(this.size),
+                    aliname: this.aliname,
+                    time: this.time,
+                    warn_up:  parseInt(this.warn_up),
+                    del: parseInt(this.del),
+                };
+                if(this.showmodal=='3'){
+                    data.id=''
+                }
+
+                if(data.id){
+                    axios.put('http://127.0.0.1:8084/UpdateQurey/', data, {
+                        headers: {
+                            'Content-Type': 'application/json' // 设置Content-Type为application/json
+                        }
+                    }).then(response => {
+                        console.log(response);
+                        alert("成功")
+
+                        this.close()
+
+                        if(this.version==6){
+                            this.V6()
+                        }
+                        else{
+                            this.V7()
+                        }
+
+                    })
+                        .catch(error => {
+                            console.error(error);
+                            alert("失败")
+                        });
+                }
+                else {
+                    delete data.id;
+                    axios.post('http://127.0.0.1:8084/CreateQurey/', data, {
+                        headers: {
+                            'Content-Type': 'application/json' // 设置Content-Type为application/json
+                        }
+                    })
+                        .then(response => {
+                            console.log(response);
+                            alert("成功")
+
+                            this.close()
+
+                            if(this.version=="6"){
+                                this.V6()
+                            }
+                            else{
+                                this.V7()
+                            }
+
+                        })
+                        .catch(error => {
+                            console.error(error);
+                            alert("失败")
+                        });
+
+                }
+            },
+            remove2(id,es_name) {
+                const data = {
+                    id,
+                    es_name
+                };
+                axios.post('http://127.0.0.1:8084/DeleteQurey/',data, {
+                    headers: {
+                        'Content-Type': 'application/json' // 设置Content-Type为application/json
+                    }
+                })
+                    .then(response => {
+                        if (response.data.msg == 404) {
+                            alert("失败");
+                            return;
+                        }
+                        console.log(response);
+                        alert("成功");
+                        console.log(this.version);
+                        if (this.version == "6") {
+                            this.V6();
+                        } else {
+                            this.V7();
+                        }
+                    })
+                    .catch(error => {
+                        console.error(error);
+                        alert("失败");
+                    });
+            },
+            V6(){
+                this.version = "6"
+                axios.get('http://127.0.0.1:8084/SqlV6QureyHeadr/')
+                    .then(response => {
+                        console.log(response.data.data)
+                        this.array = response.data.data;
+
+                    })
+
+                    .catch(error => {
+                        console.error(error);
+                    });
+            },
+            V7(){
+                this.version = "7"
+                axios.get('http://127.0.0.1:8084/SqlV7QureyHeadr/')
+                    .then(response => {
+                        console.log(response.data.data)
+                        this.array = response.data.data;
+                    })
+                    .catch(error => {
+                        console.error(error);
+                    });
+            }
+        }
+    });
+</script>
+</body>
+</html>

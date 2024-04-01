@@ -1,0 +1,60 @@
+name: "webesapp"
+mode: "release"
+port: 8084
+version: "v0.1.1"
+start_time: "2024-04-01"
+machine_id: 1
+
+#auth:
+#  jwt_expire: 8760
+
+log:
+  level: "debug"
+  filename: "web_app.log"
+  max_size: 200
+  max_age: 30
+  max_backups: 7
+#mysql:
+#  host: "xxxxx"
+#  port: 3306
+#  user: "root"
+#  password: "xxx"
+#  dbname: "go_elastic"
+#  max_open_conns: 200
+#  max_idle_conns: 50
+cos:
+  secretid: "xxx"
+  secretkey: "xxxx"
+  cosurl: "https://dev-xxxx.cos.ap-shanghai.myqcloud.com"
+mysql:
+  host: "xcxxx"
+  port: 3306
+  user: "app_test"
+  password: "xxxx"
+  dbname: "elastic-test"
+  max_open_conns: 200
+  max_idle_conns: 50
+sqlserver:
+  host: "xxxx"
+  port: 1433
+  user: "xxx"
+  dbname: "xxx"
+  password: "xxxx"
+es6:
+#  ucode-test:
+#    ip_host: "http://10.0.2.94:9600"
+#    user: "elastic"
+#    password: "xxx"
+#  jnc-test:
+#    ip_host: "http://xxxx:9600"
+#    user: "elastic"
+#    password: "xxx"
+es7:
+#  ucode-test:
+#    ip_host: "http://10.0.2.94:9600"
+#    user: "elastic"
+#    password: "xxx"
+#  jnc-test:
+#    ip_host: "http://xxxx:9600"
+#    user: "elastic"
+#    password: "xxx"
